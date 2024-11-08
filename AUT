@@ -1,0 +1,187 @@
+-- Variables
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local slayerQuestXP = player:WaitForChild("SlayerQuestXP")
+local autofarmActive = false
+local autoStoreActive = false
+local guiVisible = true
+
+-- Constants
+local GREEN_COLOR = Color3.fromRGB(0, 255, 0)
+local BLUE_COLOR = Color3.fromRGB(0, 0, 255)
+local PURPLE_COLOR = Color3.fromRGB(128, 0, 128)
+
+-- Create a ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+-- Create main frame
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 300, 0, 300)
+mainFrame.Position = UDim2.new(0.5, -150, 0.5, -150)
+mainFrame.BackgroundColor3 = PURPLE_COLOR
+mainFrame.Visible = guiVisible -- Set initial visibility
+mainFrame.Parent = screenGui
+
+-- Create Buttons
+local autofarmButton = Instance.new("TextButton")
+autofarmButton.Size = UDim2.new(0, 100, 0, 50)
+autofarmButton.Position = UDim2.new(0.5, -50, 0, 20)
+autofarmButton.BackgroundColor3 = GREEN_COLOR
+autofarmButton.Text = "Start Bearer Boss Autofarm"
+autofarmButton.Parent = mainFrame
+
+local autoStoreButton = Instance.new("TextButton")
+autoStoreButton.Size = UDim2.new(0, 100, 0, 50)
+autoStoreButton.Position = UDim2.new(0.5, -50, 0.5, -50)
+autoStoreButton.BackgroundColor3 = BLUE_COLOR
+autoStoreButton.Text = "Start Auto-Store Fingers"
+autoStoreButton.Parent = mainFrame
+
+-- Create a movable circle button for mobile users
+local mobileButton = Instance.new("TextButton")
+mobileButton.Size = UDim2.new(0, 50, 0, 50)
+mobileButton.Position = UDim2.new(0.5, -25, 0.5, -25)
+mobileButton.BackgroundColor3 = PURPLE_COLOR
+mobileButton.Text = ""
+mobileButton.Parent = screenGui
+
+-- Function to toggle GUI visibility
+local function toggleGuiVisibility()
+   guiVisible = not guiVisible
+   mainFrame.Visible = guiVisible
+end
+
+-- Function to make the mobile button movable
+local dragging = false
+local dragInput, dragStart, startPos
+mobileButton.MouseButton1Down:Connect(function(input)
+   dragging = true
+   dragStart = input.Position
+   startPos = mobileButton.Position
+end)
+
+mobileButton.MouseMoved:Connect(function(input)
+   if dragging then
+      local delta = input.Position - dragStart
+      mobileButton.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+   end
+end)
+
+mobileButton.MouseButton1Up:Connect(function()
+   dragging = false
+end)
+
+-- Toggle the GUI visibility when the mobile button is clicked
+mobileButton.MouseButton1Click:Connect(toggleGuiVisibility)
+
+-- Toggle function for Bearer Boss Autofarm
+local function toggleAutofarm()
+   autofarmActive = not autofarmActive
+   autofarmButton.Text = autofarmActive and "Stop Bearer Boss Autofarm" or "Start Bearer Boss Autofarm"
+   if autofarmActive then
+      spawn(function()
+         while autofarmActive do
+            if slayerQuestXP.Value < 100000 then
+               local curse = findCurse()
+               if curse then
+                  humanoid:MoveTo(curse.HumanoidRootPart.Position)
+                  repeat wait(0.1) until (curse.HumanoidRootPart.Position - character.HumanoidRootPart.Position).Magnitude <= 5
+                  pcall(function()
+                     game.ReplicatedStorage.Attack:FireServer(curse)
+                  end)
+                  wait(1)
+               else
+                  wait(5) -- Wait if no curses are found
+               end
+            else
+               local bearerBoss = findBearerBoss()
+               if bearerBoss then
+                  humanoid:MoveTo(bearerBoss.HumanoidRootPart.Position)
+                  repeat wait(0.1) until (bearerBoss.HumanoidRootPart.Position - character.HumanoidRootPart.Position).Magnitude <= 5
+                  pcall(function()
+                     game.ReplicatedStorage.Attack:FireServer(bearerBoss)
+                  end)
+                  wait(1)
+               end
+            end
+         end
+      end)
+   end
+end
+
+-- Toggle function for Auto-Store Fingers
+local function toggleAutoStore()
+   autoStoreActive = not autoStoreActive
+   autoStoreButton.Text = autoStoreActive and "Stop Auto-Store Fingers" or "Start Auto-Store Fingers"
+   if autoStoreActive then
+      spawn(function()
+         while autoStoreActive do
+            autoStoreFingers()
+            wait(2) -- Frequency to check for new fingers
+         end
+      end)
+   end
+end
+
+-- Connect buttons to their toggle functions
+autofarmButton.MouseButton1Click:Connect(toggleAutofarm)
+autoStoreButton.MouseButton1Click:Connect(toggleAutoStore)
+
+-- Helper function: Find the Bearer Boss
+function findBearerBoss()
+   for _, boss in pairs(workspace.Bosses:GetChildren()) do
+      if boss.Name == "Bearer Boss" and boss:FindFirstChild("Humanoid") and boss.Humanoid.Health > 0 then
+         return boss
+      end
+   end
+   return nil
+end
+
+-- Helper function: Find Curses
+function findCurse()
+   for _, curse in pairs(workspace.Curses:GetChildren()) do
+      if curse.Name == "Curse" and curse:FindFirstChild("Humanoid") and curse.Humanoid.Health > 0 then
+         return curse
+      end
+   end
+   return nil
+end
+
+-- Helper function: Auto-Store Fingers
+function autoStoreFingers()
+   for _, item in pairs(player.Inventory:GetChildren()) do
+      if item:IsA("Tool") and item.Name == "Finger" then
+         pcall(function()
+            game.ReplicatedStorage.FingerStorage.Store:FireServer(item)
+            print("Stored a Finger!")
+         end)
+      end
+   end
+end
+
+-- Automatically accept the Slayer Quest without interaction
+function acceptSlayerQuest()
+   local questNPC = workspace:FindFirstChild("Slayer Quest NPC")
+   if questNPC and questNPC:FindFirstChild("HumanoidRootPart") then
+      pcall(function()
+         game.ReplicatedStorage.Quest:FireServer("Accept")
+         print("Automatically accepted Slayer Quest!")
+      end)
+   end
+end
+
+-- Auto Accept Slayer Quest
+spawn(function()
+   wait(3)
+   acceptSlayerQuest()
+end)
+
+-- Toggle GUI visibility with 'J' key for PC users (not applicable for Android)
+game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
+   if gameProcessed then return end
+   if input.KeyCode == Enum.KeyCode.J then
+      toggleGuiVisibility()
+   end
+end)
