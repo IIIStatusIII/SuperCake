@@ -44,7 +44,7 @@ local mobileButton = Instance.new("TextButton")
 mobileButton.Size = UDim2.new(0, 50, 0, 50)
 mobileButton.Position = UDim2.new(0.5, -25, 0.5, -25)
 mobileButton.BackgroundColor3 = PURPLE_COLOR
-mobileButton.Text = ""
+mobileButton.Text = "Chicken Butt"
 mobileButton.Parent = screenGui
 
 -- Function to toggle GUI visibility
