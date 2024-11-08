@@ -26,25 +26,25 @@ mainFrame.Parent = screenGui
 
 -- Create Buttons
 local autofarmButton = Instance.new("TextButton")
-autofarmButton.Size = UDim2.new(0, 100, 0, 50)
-autofarmButton.Position = UDim2.new(0.5, -50, 0, 20)
+autofarmButton.Size = UDim2.new(0, 250, 0, 60) -- Increased size for touch
+autofarmButton.Position = UDim2.new(0.5, -125, 0, 20) -- Centered
 autofarmButton.BackgroundColor3 = GREEN_COLOR
 autofarmButton.Text = "Start Bearer Boss Autofarm"
 autofarmButton.Parent = mainFrame
 
 local autoStoreButton = Instance.new("TextButton")
-autoStoreButton.Size = UDim2.new(0, 100, 0, 50)
-autoStoreButton.Position = UDim2.new(0.5, -50, 0.5, -50)
+autoStoreButton.Size = UDim2.new(0, 250, 0, 60) -- Increased size for touch
+autoStoreButton.Position = UDim2.new(0.5, -125, 0.5, -50) -- Centered
 autoStoreButton.BackgroundColor3 = BLUE_COLOR
 autoStoreButton.Text = "Start Auto-Store Fingers"
 autoStoreButton.Parent = mainFrame
 
 -- Create a movable circle button for mobile users
 local mobileButton = Instance.new("TextButton")
-mobileButton.Size = UDim2.new(0, 50, 0, 50)
-mobileButton.Position = UDim2.new(0.5, -25, 0.5, -25)
+mobileButton.Size = UDim2.new(0, 70, 0, 70) -- Larger for easier touch
+mobileButton.Position = UDim2.new(0.5, -35, 0.5, -35) -- Centered
 mobileButton.BackgroundColor3 = PURPLE_COLOR
-mobileButton.Text = "Chicken Butt"
+mobileButton.Text = ""
 mobileButton.Parent = screenGui
 
 -- Function to toggle GUI visibility
